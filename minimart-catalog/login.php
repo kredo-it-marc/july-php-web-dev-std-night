@@ -55,6 +55,9 @@
             //compare the password from the form and the encrypted password from the database
             if( password_verify($password, $user_details["password"]) )
             {
+                session_start();
+                $_SESSION["user_id"] = $user_details["id"];
+                $_SESSION["username"] = $user_details["username"];
                 header("Location: products.php");
             }
             else
