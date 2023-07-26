@@ -1,6 +1,9 @@
-<?php
-    include "database.php";
+<?php 
+    include "database.php"; 
     session_start();
+    
+    $product_id = $_GET["product_id"]; //get URL variable
+    $product_details = getProduct($product_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,36 +11,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <title>Minimart Catalog | Add Product</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Minimart Catalog | Edit Product</title>
 </head>
-<body class="bg-light" style="min-height: 100vh">
+<body class="bg-light" style="min-height:100vh;">
     <?php include "navbar.php"; ?>
     <div class="container py-5">
         <?php
             if( isset($_POST["btn_submit"]) )
             {
                 //INPUT
+                $id = $_POST["product_id"];
                 $title = $_POST["title"];
                 $description = $_POST["description"];
                 $price = $_POST["price"];
                 $section_id = $_POST["section_id"];
 
                 //PROCESS
-                createProduct($title, $description, $price, $section_id);
+                updateProduct($id, $title, $description, $price, $section_id);
             }
         ?>
         <div class="card w-50 mx-auto">
             <div class="card-header">
-                <h1 class="display-5 card-title text-center">Add Product</h1>
+                <h1 class="display-5 card-title text-center">Edit Product</h1>
             </div>
             <div class="card-body">
                 <form action="" method="post">
+                    <input type="hidden" name="product_id" value="<?= $product_details["id"] ?>"> <!--product id-->
+
                     <label for="title" class="form-label">Title</label>
-                    <input type="text" name="title" id="title" class="form-control mb-3" required>
+                    <input type="text" name="title" id="title" class="form-control mb-3" value="<?= $product_details["title"]?>" required>
                     <label for="description" class="form-label">Description</label>
-                    <textarea name="description" id="description" cols="30" rows="10" class="form-control mb-3" required></textarea>
+                    <textarea name="description" id="description" cols="30" rows="10" class="form-control mb-3" required><?= $product_details["description"] ?></textarea>
                     <label for="price" class="form-label">Price</label>
-                    <input type="number" name="price" id="price" class="form-control mb-3" required>
+                    <input type="number" name="price" id="price" class="form-control mb-3" value="<?= $product_details["price"]?>" required>
                     <label for="section" calss="form-label">Section</label>
                     <select name="section_id" id="section" required class="form-select mb-3">
                         <!-- display section from the database -->
@@ -49,7 +56,14 @@
                             {
                                 while($row = $sections->fetch_assoc())
                                 {
-                                    echo "<option value='".$row["id"]."'>".$row["title"]."</option>";
+                                    if($product_details["section_id"] == $row["id"])
+                                    {
+                                        echo "<option value='".$row["id"]."' selected>".$row["title"]."</option>";
+                                    }
+                                    else
+                                    {
+                                        echo "<option value='".$row["id"]."'>".$row["title"]."</option>";
+                                    }
                                 }
                             }
                             else
@@ -58,7 +72,7 @@
                             }
                         ?>
                     </select>
-                    <input type="submit" value="Submit" name="btn_submit" class="btn btn-success w-100">
+                    <input type="submit" value="Save" name="btn_submit" class="btn btn-success w-100">
                 </form>
             </div>
         </div>
@@ -76,20 +90,28 @@
         return $result;
     }
 
-    function createProduct($title, $description, $price, $section_id)
+    function getProduct($product_id)
     {
         $conn = dbConnect();
-        $sql = "INSERT INTO products(title, description, price, section_id) VALUES('$title','$description',$price,$section_id)";
+        $sql = "SELECT * FROM products WHERE id = $product_id";
+        return $conn->query($sql)->fetch_assoc();
+    }
+
+    function updateProduct($id, $title, $description, $price, $section_id)
+    {
+        $conn = dbConnect();
+        $sql = "UPDATE products SET title = '$title', description='$description', price=$price, section_id = $section_id WHERE id = $id";
         $result = $conn->query($sql);
-        
-        if( $result )
+
+        if($result)
         {
             header("Location: products.php");
         }
         else
         {
-            //display error message
-            echo "<div class='alert alert-danger w-50 mx-auto'>An error occured. Failed to save the product. <small>".$conn->error."</small></div>";
+            //display an error message
+            echo "<div class='alert alert-danger w-50 mx-auto mb-4'>Failed to update product. Kindly try again. <small>".$conn->error."</small></div>";
         }
+
     }
 ?>

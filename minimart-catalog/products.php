@@ -27,6 +27,8 @@
                         <th>Description</th>
                         <th>Price</th>
                         <th>Section</th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +46,9 @@
                                 echo "<td>".$row["title"]."</td>";
                                 echo "<td>".$row["description"]."</td>";
                                 echo "<td>".$row["price"]."</td>";
-                                echo "<td>".$row["section_id"]."</td>";
+                                echo "<td>".$row["section"]."</td>";
+                                echo "<td><a href='edit-product.php?product_id=".$row["id"]."' class='btn btn-outline-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a></td>";
+                                echo "<td><a href='delete-product.php?product_id=".$row["id"]."' class='btn btn-outline-danger btn-sm'><i class='fa-solid fa-trash'></i></a></td>";
                                 echo "</tr>";
                             }
                         }
@@ -58,13 +62,14 @@
             </table>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </body>
 </html>
 <?php
     function getProducts()
     {
         $conn = dbConnect(); //Connect to the database
-        $sql = "SELECT * FROM products";
+        $sql = "SELECT products.id, products.title, products.description, products.price, sections.title as section FROM products INNER JOIN sections ON products.section_id = sections.id";
         $result = $conn->query($sql); //run the sql statement
 
         return $result;
